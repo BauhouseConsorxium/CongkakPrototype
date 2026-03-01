@@ -7,6 +7,7 @@ import ModeBar from './components/ModeBar';
 import TrackBar from './components/TrackBar';
 import Transport from './components/Transport';
 import EuclideanRing from './components/EuclideanRing';
+import LcdDisplay from './components/LcdDisplay';
 import Waveform from './components/Waveform';
 import KnobsBar from './components/KnobsBar';
 import PadsGrid from './components/PadsGrid';
@@ -76,6 +77,7 @@ export default function App() {
             onStop={actions.stop}
             onSetBpm={actions.setBpm}
           />
+          <LcdDisplay state={state} />
           <EuclideanRing
             seq={state.seq}
             curStep={state.curStep}
