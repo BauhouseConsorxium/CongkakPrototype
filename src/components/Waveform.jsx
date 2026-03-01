@@ -54,7 +54,7 @@ export default function Waveform() {
   }, []);
 
   return (
-    <div className="h-11 bg-surface-1 rounded-lg overflow-hidden">
+    <div className="h-5 bg-surface-1 rounded overflow-hidden">
       <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );

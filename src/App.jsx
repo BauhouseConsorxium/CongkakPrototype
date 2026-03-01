@@ -15,7 +15,8 @@ import Sidebar from './components/Sidebar';
 
 export default function App() {
   const { state, actions, stateRef } = useStore();
-  const [showPads, setShowPads] = useState(true);
+  const [showPads, setShowPads] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
 
@@ -66,7 +67,7 @@ export default function App() {
         onScanMidi={actions.scanMidi}
       />
 
-      <div className="grid grid-cols-[1fr_320px] max-md:grid-cols-1 min-h-[calc(100vh-52px)]">
+      <div className={`grid ${showSidebar ? 'grid-cols-[1fr_320px]' : 'grid-cols-1'} max-md:grid-cols-1 min-h-[calc(100vh-52px)]`}>
         <div className="p-3.5 flex flex-col gap-2.5">
           <ModeBar mode={state.mode} onSetMode={actions.setMode} />
           <TrackBar selTrack={state.selTrack} onSetTrack={actions.setTrack} />
@@ -77,18 +78,28 @@ export default function App() {
             onStop={actions.stop}
             onSetBpm={actions.setBpm}
           />
-          <LcdDisplay state={state} />
-          <EuclideanRing
-            seq={state.seq}
-            curStep={state.curStep}
-            selTrack={state.selTrack}
-            euclidean={state.euclidean}
-            curPatName={state.curPatName}
-            bpm={state.bpm}
-            onToggleStep={(step) => actions.dispatch({ type: 'TOGGLE_STEP', step })}
-            onSelectTrack={actions.setTrack}
-          />
-          <Waveform />
+          <div className="flex gap-3 items-stretch justify-center flex-wrap">
+            <div className="shrink-0" style={{ width: 128 * 3 + 12 }}>
+            <EuclideanRing
+              seq={state.seq}
+              curStep={state.curStep}
+              selTrack={state.selTrack}
+              euclidean={state.euclidean}
+              curPatName={state.curPatName}
+              bpm={state.bpm}
+              onToggleStep={(step) => actions.dispatch({ type: 'TOGGLE_STEP', step })}
+              onSelectTrack={actions.setTrack}
+            />
+            </div>
+            <div className="shrink-0 flex flex-col items-center p-[6px] rounded-lg bg-[#050d05] border border-[#1a2e1a] shadow-[inset_0_1px_4px_rgba(0,0,0,0.6),0_0_12px_rgba(0,255,136,0.03)]" style={{ width: 128 * 3 + 12 }}>
+              <LcdDisplay state={state} />
+              <div className="flex-1 flex items-center w-full px-1">
+                <div className="w-full">
+                  <Waveform />
+                </div>
+              </div>
+            </div>
+          </div>
           <KnobsBar
             knobValues={state.knobValues}
             maps={state.maps}
@@ -117,22 +128,33 @@ export default function App() {
           )}
         </div>
 
-        <Sidebar
-          activeTab={state.sidebarTab}
-          logs={state.logs}
-          maps={state.maps}
-          learn={state.learn}
-          midiAccess={state.midiAccess}
-          onTabChange={actions.setSidebarTab}
-          onScanMidi={actions.scanMidi}
-          onToggleLearn={actions.toggleLearn}
-          onClearMaps={actions.clearAllMaps}
-          onSaveMaps={actions.saveMaps}
-          onLoadMaps={actions.loadMaps}
-          onClearMapKnob={actions.clearMapKnob}
-          onClearMapPad={actions.clearMapPad}
-          onClearLogs={actions.clearLogs}
-        />
+        {showSidebar ? (
+          <Sidebar
+            activeTab={state.sidebarTab}
+            logs={state.logs}
+            maps={state.maps}
+            learn={state.learn}
+            midiAccess={state.midiAccess}
+            onTabChange={actions.setSidebarTab}
+            onScanMidi={actions.scanMidi}
+            onToggleLearn={actions.toggleLearn}
+            onClearMaps={actions.clearAllMaps}
+            onSaveMaps={actions.saveMaps}
+            onLoadMaps={actions.loadMaps}
+            onClearMapKnob={actions.clearMapKnob}
+            onClearMapPad={actions.clearMapPad}
+            onClearLogs={actions.clearLogs}
+            onCollapse={() => setShowSidebar(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setShowSidebar(true)}
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-10 bg-surface-1 border border-surface-2 border-r-0 rounded-l-md px-1 py-3 font-mono text-[10px] text-dim hover:text-c3 cursor-pointer transition-colors duration-150"
+            title="Show sidebar"
+          >
+            {'◂'}
+          </button>
+        )}
       </div>
     </div>
   );

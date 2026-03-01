@@ -9,7 +9,7 @@ const tabs = [
 export default function Sidebar({
   activeTab, logs, maps, learn, midiAccess,
   onTabChange, onScanMidi, onToggleLearn, onClearMaps, onSaveMaps, onLoadMaps,
-  onClearMapKnob, onClearMapPad, onClearLogs,
+  onClearMapKnob, onClearMapPad, onClearLogs, onCollapse,
 }) {
   return (
     <div className="border-l border-surface-2 bg-surface-1 flex flex-col max-h-[calc(100vh-60px)] max-md:max-h-none">
@@ -27,6 +27,13 @@ export default function Sidebar({
             {tab.label}
           </button>
         ))}
+        <button
+          onClick={onCollapse}
+          className="px-2.5 py-2.5 text-[11px] text-dim hover:text-c3 cursor-pointer font-mono transition-colors duration-150 border-b-2 border-transparent"
+          title="Collapse sidebar"
+        >
+          {'▸'}
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3">

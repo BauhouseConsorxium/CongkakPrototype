@@ -68,3 +68,77 @@ export const FONT = {
   // Em dash (used as default pattern name)
   '\u2014': [0, 0, 0, 31, 0, 0, 0],         // — same as hyphen
 };
+
+// Wayang (shadow puppet) sprites — 7px wide × 11 rows
+// Each row is 7 bits (bit6=left, bit0=right)
+// 3 dance poses cycle for idle animation, plus raised & ecstatic
+
+export const WAYANG_DANCE_A = [  // Neutral, arms at sides
+  8,   // ···#···  crown
+  28,  // ··###··  headdress
+  8,   // ···#···  neck
+  42,  // ·#·#·#·  upper arms at sides
+  28,  // ··###··  torso
+  42,  // ·#·#·#·  lower arms at sides
+  28,  // ··###··  hips
+  62,  // ·#####·  sarong
+  28,  // ··###··  sarong taper
+  20,  // ··#·#··  legs
+  0,   // ·······
+];
+
+export const WAYANG_DANCE_B = [  // Right arm up gesture
+  10,  // ···#·#·  crown + right hand
+  28,  // ··###··  head
+  8,   // ···#···  neck
+  8,   // ···#···  body
+  60,  // ·####··  left arm out + torso
+  8,   // ···#···  waist
+  28,  // ··###··  hips
+  62,  // ·#####·  sarong
+  28,  // ··###··  sarong taper
+  20,  // ··#·#··  legs
+  0,   // ·······
+];
+
+export const WAYANG_DANCE_C = [  // Left arm up gesture (mirror)
+  40,  // ·#·#···  left hand + crown
+  28,  // ··###··  head
+  8,   // ···#···  neck
+  8,   // ···#···  body
+  30,  // ··####·  torso + right arm out
+  8,   // ···#···  waist
+  28,  // ··###··  hips
+  62,  // ·#####·  sarong
+  28,  // ··###··  sarong taper
+  20,  // ··#·#··  legs
+  0,   // ·······
+];
+
+export const WAYANG_RAISED = [   // Both arms up, chanting "cak"
+  65,  // #·····#  hands raised high
+  34,  // ·#···#·  upper arms
+  28,  // ··###··  head
+  8,   // ···#···  neck
+  28,  // ··###··  torso
+  8,   // ···#···  waist
+  28,  // ··###··  hips
+  62,  // ·#####·  sarong
+  28,  // ··###··  sarong taper
+  20,  // ··#·#··  legs
+  0,   // ·······
+];
+
+export const WAYANG_ECSTATIC = [ // Maximum energy, current beat
+  65,  // #·····#  hands high
+  99,  // ##···##  arms wide
+  62,  // ·#####·  head (big energy)
+  8,   // ···#···  neck
+  28,  // ··###··  torso
+  28,  // ··###··  torso
+  62,  // ·#####·  wide hips
+  127, // #######  max sarong
+  20,  // ··#·#··  legs
+  34,  // ·#···#·  feet wide
+  0,   // ·······
+];
