@@ -11,7 +11,7 @@ export default function Transport({ playing, bpm, onTogglePlay, onStop, onSetBpm
       </button>
       <button
         onClick={onStop}
-        className="w-10 h-10 rounded-full border-2 border-c1 text-c1 bg-transparent flex items-center justify-center text-base cursor-pointer transition-all duration-150 hover:bg-[rgba(255,51,119,0.15)]"
+        className="w-10 h-10 rounded-full border-2 border-c1 text-c1 bg-transparent flex items-center justify-center text-base cursor-pointer transition-all duration-150 hover:bg-[rgba(255,68,68,0.15)]"
       >
         {'\u25A0'}
       </button>

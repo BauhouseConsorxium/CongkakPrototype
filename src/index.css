@@ -9,19 +9,19 @@
     box-sizing: border-box;
   }
   body {
-    background: #141020;
-    color: #f0eaf8;
+    background: #0A0A0A;
+    color: #F0EDE8;
     font-family: 'Space Grotesk', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
   ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-thumb { background: #3a3350; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: #4A4A4A; border-radius: 2px; }
 
   input[type="range"] {
     -webkit-appearance: none;
     height: 4px;
-    background: #2a2240;
+    background: #333333;
     border-radius: 3px;
     outline: none;
   }
@@ -30,11 +30,11 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #ff9922;
+    background: #00DD77;
     cursor: pointer;
   }
 }
 
 @keyframes learn-pulse {
-  50% { box-shadow: 0 0 12px rgba(255, 51, 119, 0.3); }
+  50% { box-shadow: 0 0 12px rgba(255, 68, 68, 0.3); }
 }

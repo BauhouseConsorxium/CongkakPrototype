@@ -23,12 +23,12 @@ export default function SequencerGrid({ seq, curStep, selTrack, curPatName, bpm 
                   <div
                     key={s}
                     className={`aspect-[1.8] rounded-[2px] border transition-all duration-75 ${
-                      cur ? 'border-white/20' : on ? 'border-transparent' : 'border-[#2a244088]'
+                      cur ? 'border-white/20' : on ? 'border-transparent' : 'border-[#33333388]'
                     }`}
                     style={{
                       background: on
                         ? tr.col + (cur ? 'aa' : '44')
-                        : '#2a2240',
+                        : '#333333',
                       boxShadow: cur ? 'inset 0 0 8px rgba(255,255,255,0.15)' : undefined,
                     }}
                   />

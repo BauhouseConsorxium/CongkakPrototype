@@ -22,7 +22,7 @@ export default function Waveform() {
 
       const W = canvas.clientWidth;
       const H = canvas.clientHeight;
-      ctx.fillStyle = 'rgba(20,16,32,0.85)';
+      ctx.fillStyle = 'rgba(10,10,10,0.85)';
       ctx.fillRect(0, 0, W, H);
 
       const analyser = getAnalyser();
@@ -33,9 +33,9 @@ export default function Waveform() {
       analyser.getByteTimeDomainData(data);
 
       ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#33ddff';
+      ctx.strokeStyle = '#00FF88';
       ctx.shadowBlur = 4;
-      ctx.shadowColor = '#33ddff';
+      ctx.shadowColor = '#00FF88';
       ctx.beginPath();
       for (let i = 0; i < N; i++) {
         const y = (data[i] / 128) * H / 2;

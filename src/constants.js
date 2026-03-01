@@ -1,12 +1,12 @@
 export const TRACKS = [
-  { id: 'kick',  lbl: 'KICK',  col: '#ff3377', s: 'KCK' },
-  { id: 'snare', lbl: 'SNARE', col: '#ff6633', s: 'SNR' },
-  { id: 'hihat', lbl: 'HIHAT', col: '#ff9922', s: 'HHT' },
-  { id: 'clap',  lbl: 'CLAP',  col: '#ffdd22', s: 'CLP' },
-  { id: 'bass',  lbl: 'BASS',  col: '#77ff44', s: 'BAS' },
-  { id: 'lead',  lbl: 'LEAD',  col: '#33ddff', s: 'LED' },
-  { id: 'stab',  lbl: 'STAB',  col: '#4488ff', s: 'STB' },
-  { id: 'noise', lbl: 'NOISE', col: '#aa44ff', s: 'NZZ' },
+  { id: 'kick',  lbl: 'KICK',  col: '#FF4444', s: 'KCK' },
+  { id: 'snare', lbl: 'SNARE', col: '#8B7355', s: 'SNR' },
+  { id: 'hihat', lbl: 'HIHAT', col: '#B8A080', s: 'HHT' },
+  { id: 'clap',  lbl: 'CLAP',  col: '#7D6548', s: 'CLP' },
+  { id: 'bass',  lbl: 'BASS',  col: '#00DD77', s: 'BAS' },
+  { id: 'lead',  lbl: 'LEAD',  col: '#00FF88', s: 'LED' },
+  { id: 'stab',  lbl: 'STAB',  col: '#00CC66', s: 'STB' },
+  { id: 'noise', lbl: 'NOISE', col: '#6B5040', s: 'NZZ' },
 ];
 
 export const TRACK_KEYS = ['kick', 'snare', 'hihat', 'clap', 'bass', 'lead', 'stab', 'noise'];
@@ -31,14 +31,14 @@ export const SOUND_PRESETS = [
 ];
 
 export const KNOB_DEFS = [
-  { id: 'mode',   lbl: 'MODE',   min: 0, max: 3,     val: 0,    col: '#ff3377', fmt: v => ['DRAW', 'PLAY', 'SOUND', 'BEATS'][Math.round(v)] },
-  { id: 'track',  lbl: 'TRACK',  min: 0, max: 7,     val: 0,    col: '#ff9922', fmt: v => TRACKS[Math.round(v)].s },
-  { id: 'tempo',  lbl: 'TEMPO',  min: 40, max: 300,   val: 120,  col: '#33ddff', fmt: v => Math.round(v) },
-  { id: 'pitch',  lbl: 'PITCH',  min: 20, max: 2000,  val: 440,  col: '#77ff44' },
-  { id: 'decay',  lbl: 'DECAY',  min: .01, max: 2,    val: .3,   col: '#aa44ff' },
-  { id: 'filter', lbl: 'FILTER', min: 100, max: 12000, val: 5000, col: '#ff6633' },
-  { id: 'glitch', lbl: 'GLITCH', min: 0, max: 100,    val: 20,   col: '#ff3377' },
-  { id: 'volume', lbl: 'VOL',    min: 0, max: 100,    val: 70,   col: '#77ff44' },
+  { id: 'mode',   lbl: 'MODE',   min: 0, max: 3,     val: 0,    col: '#FF4444', fmt: v => ['DRAW', 'PLAY', 'SOUND', 'BEATS'][Math.round(v)] },
+  { id: 'track',  lbl: 'TRACK',  min: 0, max: 7,     val: 0,    col: '#B8A080', fmt: v => TRACKS[Math.round(v)].s },
+  { id: 'tempo',  lbl: 'TEMPO',  min: 40, max: 300,   val: 120,  col: '#00FF88', fmt: v => Math.round(v) },
+  { id: 'pitch',  lbl: 'PITCH',  min: 20, max: 2000,  val: 440,  col: '#00DD77' },
+  { id: 'decay',  lbl: 'DECAY',  min: .01, max: 2,    val: .3,   col: '#6B5040' },
+  { id: 'filter', lbl: 'FILTER', min: 100, max: 12000, val: 5000, col: '#8B7355' },
+  { id: 'glitch', lbl: 'GLITCH', min: 0, max: 100,    val: 20,   col: '#FF4444' },
+  { id: 'volume', lbl: 'VOL',    min: 0, max: 100,    val: 70,   col: '#00DD77' },
 ];
 
 const _ = 0, X = 1;

@@ -88,7 +88,7 @@ function MapPanel({ maps, learn, onToggleLearn, onClearMaps, onSaveMaps, onLoadM
     <div>
       <SectionTitle>MIDI LEARN</SectionTitle>
       <div className="flex gap-1.5 mb-3 flex-wrap">
-        <Btn className={learn ? 'border-c1 bg-[rgba(255,51,119,0.1)] text-c1' : ''} onClick={onToggleLearn}>LEARN</Btn>
+        <Btn className={learn ? 'border-c1 bg-[rgba(255,68,68,0.1)] text-c1' : ''} onClick={onToggleLearn}>LEARN</Btn>
         <Btn onClick={onClearMaps}>CLEAR</Btn>
         <Btn primary onClick={onSaveMaps}>SAVE</Btn>
         <Btn onClick={onLoadMaps}>LOAD</Btn>
@@ -149,7 +149,7 @@ function SectionTitle({ children }) {
 
 function InfoBox({ children }) {
   return (
-    <div className="p-2.5 bg-[rgba(51,221,255,0.04)] border border-[rgba(51,221,255,0.08)] rounded-md text-[11px] text-dim leading-relaxed mb-3 font-mono">
+    <div className="p-2.5 bg-[rgba(0,255,136,0.04)] border border-[rgba(0,255,136,0.08)] rounded-md text-[11px] text-dim leading-relaxed mb-3 font-mono">
       {children}
     </div>
   );
@@ -159,7 +159,7 @@ function Btn({ children, primary, small, className = '', onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`font-mono text-[11px] px-3 py-1.5 border border-[#444] bg-surface-2 text-text cursor-pointer tracking-[1px] uppercase rounded transition-all duration-200 whitespace-nowrap hover:border-c3 ${
+      className={`font-mono text-[11px] px-3 py-1.5 border border-[#4A4A4A] bg-surface-2 text-text cursor-pointer tracking-[1px] uppercase rounded transition-all duration-200 whitespace-nowrap hover:border-c3 ${
         primary ? 'border-c4 text-c4' : ''
       } ${className}`}
     >

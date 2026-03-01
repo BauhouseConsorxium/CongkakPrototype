@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useStore } from './store';
 import { initAudio } from './audio';
 import { KEY_MAP } from './constants';
@@ -14,6 +14,7 @@ import Sidebar from './components/Sidebar';
 
 export default function App() {
   const { state, actions, stateRef } = useStore();
+  const [showPads, setShowPads] = useState(true);
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
 
@@ -91,16 +92,24 @@ export default function App() {
             onKnobChange={actions.setKnobValue}
             onLearnClick={handleLearnClick}
           />
-          <PadsGrid
-            mode={state.mode}
-            selTrack={state.selTrack}
-            seq={state.seq}
-            activePatPerTrack={state.activePatPerTrack}
-            maps={state.maps}
-            learn={state.learn}
-            onTriggerPad={actions.triggerPad}
-            onLearnClick={handleLearnClick}
-          />
+          <button
+            onClick={() => setShowPads(p => !p)}
+            className="font-mono text-[10px] tracking-[1px] text-dim hover:text-text transition-colors duration-150 self-start px-1 py-0.5"
+          >
+            {showPads ? '▾ HIDE PADS' : '▸ SHOW PADS'}
+          </button>
+          {showPads && (
+            <PadsGrid
+              mode={state.mode}
+              selTrack={state.selTrack}
+              seq={state.seq}
+              activePatPerTrack={state.activePatPerTrack}
+              maps={state.maps}
+              learn={state.learn}
+              onTriggerPad={actions.triggerPad}
+              onLearnClick={handleLearnClick}
+            />
+          )}
         </div>
 
         <Sidebar

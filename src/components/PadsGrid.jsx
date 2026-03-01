@@ -28,7 +28,7 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
             const tc = TRACKS[selTrack].col;
             bg = isOn ? tc + '44' : tc + '0d';
             borderColor = isOn ? tc : tc + '22';
-            col = isOn ? tc : '#6a5f7a';
+            col = isOn ? tc : '#4A4A4A';
             lbl = String(i + 1);
             sub = isOn ? '\u25CF' : '';
           } else if (mode === 1) {
@@ -40,9 +40,9 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
             sub = i < 8 ? tr.lbl : '';
           } else if (mode === 2) {
             const sp = SOUND_PRESETS[i];
-            bg = '#ff99220d';
-            borderColor = '#ff992222';
-            col = '#ff9922';
+            bg = '#B8A0800d';
+            borderColor = '#B8A08022';
+            col = '#B8A080';
             lbl = sp ? sp.n : '\u2014';
           } else {
             const key = TRACK_KEYS[selTrack];
@@ -52,7 +52,7 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
             const tc = TRACKS[selTrack].col;
             bg = isActive ? tc + '22' : tc + '0d';
             borderColor = isActive ? tc : tc + '22';
-            col = isActive ? tc : '#6a5f7a';
+            col = isActive ? tc : '#4A4A4A';
             lbl = pat ? pat.n : '\u2014';
             if (pat) {
               sub = pat.p.map(v => v ? '\u25CF' : '\u00B7').join('');

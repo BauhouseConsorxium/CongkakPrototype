@@ -57,23 +57,23 @@ export default function Knob({ def, value, index, mapped, learn, onValueChange, 
         learn
           ? 'border-c1 animate-[learn-pulse_1s_infinite]'
           : mapped !== null
-            ? 'border-[rgba(119,255,68,0.12)]'
+            ? 'border-[rgba(0,221,119,0.12)]'
             : 'border-transparent'
       }`}
       onClick={onLearnClick}
     >
       <div className="w-[52px] h-[52px] relative cursor-grab" onMouseDown={onMouseDown}>
         <svg viewBox="0 0 42 42" className="w-full h-full">
-          <circle cx="21" cy="21" r="18" fill="none" stroke="#2a2240" strokeWidth="2.5" />
+          <circle cx="21" cy="21" r="18" fill="none" stroke="#333333" strokeWidth="2.5" />
           <path
             d={`M${s1.x},${s1.y} A18,18 0 1,1 ${e2.x},${e2.y}`}
-            fill="none" stroke="#3a3350" strokeWidth="2.5" strokeLinecap="round"
+            fill="none" stroke="#4A4A4A" strokeWidth="2.5" strokeLinecap="round"
           />
           <path
             d={`M${s1.x},${s1.y} A18,18 0 ${largeArc},1 ${e1.x},${e1.y}`}
             fill="none" stroke={def.col} strokeWidth="2.5" strokeLinecap="round"
           />
-          <circle cx="21" cy="21" r="11" fill="#2a2240" />
+          <circle cx="21" cy="21" r="11" fill="#333333" />
         </svg>
         <div
           className="absolute top-[3px] left-1/2 w-1 h-1 rounded-full -ml-0.5"

@@ -8,26 +8,28 @@ export default function Header({ midiAccess, totalMidiMsgs, onScanMidi }) {
   })();
 
   return (
-    <div className="flex items-center justify-between px-5 py-3 border-b-[3px] border-c5 bg-gradient-to-br from-[#141020] to-[#201535]">
+    <div className="flex items-center justify-between px-5 py-3 bg-[#0A0A0A] border-b border-[#333333]">
       <div>
-        <div className="text-[28px] font-bold tracking-[3px] bg-gradient-to-br from-c1 via-c2 to-c3 bg-clip-text text-transparent">
-          GLITCH::DUO
+        <div className="text-[20px] font-bold tracking-[4px] text-c2" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+          CONGKAK::PROTO::0.1
         </div>
-        <span className="block text-[11px] font-normal tracking-[5px] text-dim font-mono">
-          SEQUENCER SYNTH
-        </span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="font-mono text-xs text-dim">{totalMidiMsgs}</span>
+        {totalMidiMsgs > 0 && (
+          <span className="font-mono text-[10px] text-dim tabular-nums">{totalMidiMsgs}</span>
+        )}
         <button
           onClick={() => onScanMidi()}
-          className={`font-mono text-xs px-4 py-2 rounded-[20px] tracking-[1px] border cursor-pointer transition-all duration-200 ${
+          className={`font-mono text-[10px] px-3 py-1.5 rounded border cursor-pointer transition-all duration-200 tracking-[1px] flex items-center gap-1.5 ${
             inputName
-              ? 'border-c4 text-c4 shadow-[0_0_12px_rgba(119,255,68,0.2)] bg-surface-1'
-              : 'border-[#333] text-dim bg-surface-1'
+              ? 'border-c4/40 text-c4 bg-c4/5'
+              : 'border-[#333] text-dim bg-transparent hover:border-dim'
           }`}
         >
-          {inputName ? `● ${inputName}` : '● SCAN MIDI'}
+          <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+            inputName ? 'bg-c4 shadow-[0_0_6px_rgba(0,221,119,0.4)]' : 'bg-dim'
+          }`} />
+          {inputName || 'SCAN MIDI'}
         </button>
       </div>
     </div>
