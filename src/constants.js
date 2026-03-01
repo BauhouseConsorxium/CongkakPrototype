@@ -198,5 +198,7 @@ export const MODE_DESCS = [
   'Pads load pattern for selected track',
 ];
 
+export const LEARN_BORDER = 'border-c1 animate-[learn-pulse_1s_infinite]';
+
 export const KEY_MAP = {};
 '1234qwerasdfzxcv'.split('').forEach((k, i) => { KEY_MAP[k] = i; });

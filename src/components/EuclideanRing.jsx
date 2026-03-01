@@ -1,4 +1,5 @@
 import { TRACKS } from '../constants';
+import Panel from './Panel';
 
 const CX = 150, CY = 150;
 const R_OUTER = 135, R_INNER = 44;
@@ -20,7 +21,7 @@ export default function EuclideanRing({
   const selEucl = euclidean[selTrack];
 
   return (
-    <div className="bg-surface-1 rounded-lg p-3 flex flex-col items-center">
+    <Panel className="rounded-lg p-3 flex flex-col items-center">
       {/* Header */}
       <div className="w-full flex items-center justify-between mb-2 px-1">
         <span className="text-[10px] font-mono tracking-widest text-dim uppercase">
@@ -173,6 +174,6 @@ export default function EuclideanRing({
           {curPatName[selTrack]}
         </text>
       </svg>
-    </div>
+    </Panel>
   );
 }

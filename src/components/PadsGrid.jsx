@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
-import { TRACKS, TRACK_KEYS, SOUND_PRESETS, TRACK_PATTERNS } from '../constants';
+import { TRACKS, TRACK_KEYS, SOUND_PRESETS, TRACK_PATTERNS, LEARN_BORDER } from '../constants';
+import Panel from './Panel';
+import { colorAlpha } from '../utils/color';
 
 export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps, learn, onTriggerPad, onLearnClick }) {
   const [flashIdx, setFlashIdx] = useState(-1);
@@ -17,7 +19,7 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
   }, [learn, mode, onTriggerPad, onLearnClick]);
 
   return (
-    <div className="bg-surface-1 rounded-[10px] p-2.5">
+    <Panel>
       <div className="grid grid-cols-4 gap-1.5">
         {Array.from({ length: 16 }, (_, i) => {
           const isFlash = flashIdx === i;
@@ -26,22 +28,22 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
           if (mode === 0) {
             const isOn = seq[selTrack][i];
             const tc = TRACKS[selTrack].col;
-            bg = isOn ? tc + '44' : tc + '0d';
-            borderColor = isOn ? tc : tc + '22';
+            bg = isOn ? colorAlpha(tc, '44') : colorAlpha(tc, '0d');
+            borderColor = isOn ? tc : colorAlpha(tc, '22');
             col = isOn ? tc : '#4A4A4A';
             lbl = String(i + 1);
             sub = isOn ? '\u25CF' : '';
           } else if (mode === 1) {
             const tr = TRACKS[i % 8];
-            bg = tr.col + '1a';
-            borderColor = tr.col + '33';
+            bg = colorAlpha(tr.col, '1a');
+            borderColor = colorAlpha(tr.col, '33');
             col = tr.col;
             lbl = tr.s;
             sub = i < 8 ? tr.lbl : '';
           } else if (mode === 2) {
             const sp = SOUND_PRESETS[i];
-            bg = '#B8A0800d';
-            borderColor = '#B8A08022';
+            bg = colorAlpha('#B8A080', '0d');
+            borderColor = colorAlpha('#B8A080', '22');
             col = '#B8A080';
             lbl = sp ? sp.n : '\u2014';
           } else {
@@ -50,8 +52,8 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
             const pat = pats?.[i];
             const isActive = activePatPerTrack[selTrack] === i;
             const tc = TRACKS[selTrack].col;
-            bg = isActive ? tc + '22' : tc + '0d';
-            borderColor = isActive ? tc : tc + '22';
+            bg = isActive ? colorAlpha(tc, '22') : colorAlpha(tc, '0d');
+            borderColor = isActive ? tc : colorAlpha(tc, '22');
             col = isActive ? tc : '#4A4A4A';
             lbl = pat ? pat.n : '\u2014';
             if (pat) {
@@ -69,7 +71,7 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
               className={`aspect-[1.15] rounded-lg cursor-pointer flex flex-col items-center justify-center transition-all duration-75 relative overflow-hidden select-none font-mono border-2 ${
                 isFlash ? 'scale-[0.92] brightness-[1.3]' : ''
               } ${
-                learn ? 'border-c1 animate-[learn-pulse_1s_infinite]' : ''
+                learn ? LEARN_BORDER : ''
               }`}
               style={{
                 background: bg,
@@ -101,6 +103,6 @@ export default function PadsGrid({ mode, selTrack, seq, activePatPerTrack, maps,
           );
         })}
       </div>
-    </div>
+    </Panel>
   );
 }

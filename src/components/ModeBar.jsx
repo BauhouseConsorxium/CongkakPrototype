@@ -1,4 +1,5 @@
 import { MODE_NAMES, MODE_DESCS } from '../constants';
+import Panel from './Panel';
 
 const chipColors = [
   { text: 'text-c1', active: 'bg-c1 text-bg border-c1' },
@@ -9,7 +10,7 @@ const chipColors = [
 
 export default function ModeBar({ mode, onSetMode }) {
   return (
-    <div className="flex gap-2 items-center p-2.5 px-3.5 bg-surface-1 rounded-[10px] border-2 border-surface-2">
+    <Panel className="flex gap-2 items-center px-3.5 border-2 border-surface-2">
       {MODE_NAMES.map((name, i) => (
         <button
           key={i}
@@ -26,6 +27,6 @@ export default function ModeBar({ mode, onSetMode }) {
       <div className="flex-1 text-right text-[11px] text-dim font-mono">
         {MODE_DESCS[mode]}
       </div>
-    </div>
+    </Panel>
   );
 }

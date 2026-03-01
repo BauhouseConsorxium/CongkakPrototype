@@ -1,8 +1,10 @@
 import { TRACKS } from '../constants';
+import Panel from './Panel';
+import { colorAlpha } from '../utils/color';
 
 export default function TrackBar({ selTrack, onSetTrack }) {
   return (
-    <div className="flex gap-1.5 p-2.5 bg-surface-1 rounded-[10px]">
+    <Panel className="flex gap-1.5">
       {TRACKS.map((tr, i) => {
         const sel = i === selTrack;
         return (
@@ -13,8 +15,8 @@ export default function TrackBar({ selTrack, onSetTrack }) {
               sel ? 'scale-105' : ''
             }`}
             style={{
-              background: tr.col + (sel ? '33' : '0d'),
-              color: sel ? tr.col : tr.col + '55',
+              background: colorAlpha(tr.col, sel ? '33' : '0d'),
+              color: sel ? tr.col : colorAlpha(tr.col, '55'),
               borderColor: sel ? tr.col : 'transparent',
             }}
           >
@@ -22,6 +24,6 @@ export default function TrackBar({ selTrack, onSetTrack }) {
           </button>
         );
       })}
-    </div>
+    </Panel>
   );
 }

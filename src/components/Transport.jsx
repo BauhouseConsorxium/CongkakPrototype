@@ -1,6 +1,8 @@
+import Panel from './Panel';
+
 export default function Transport({ playing, bpm, onTogglePlay, onStop, onSetBpm }) {
   return (
-    <div className="flex items-center gap-3 p-2.5 px-3.5 bg-surface-1 rounded-[10px]">
+    <Panel className="flex items-center gap-3 px-3.5">
       <button
         onClick={onTogglePlay}
         className={`w-10 h-10 rounded-full border-2 border-c4 flex items-center justify-center text-base cursor-pointer transition-all duration-150 ${
@@ -27,6 +29,6 @@ export default function Transport({ playing, bpm, onTogglePlay, onStop, onSetBpm
         onChange={(e) => onSetBpm(+e.target.value)}
         className="flex-1"
       />
-    </div>
+    </Panel>
   );
 }

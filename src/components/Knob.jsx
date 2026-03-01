@@ -1,5 +1,6 @@
 import { useRef, useCallback } from 'react';
 import { initAudio } from '../audio';
+import { LEARN_BORDER } from '../constants';
 
 export default function Knob({ def, value, index, mapped, learn, onValueChange, onLearnClick }) {
   const dragRef = useRef(null);
@@ -55,7 +56,7 @@ export default function Knob({ def, value, index, mapped, learn, onValueChange, 
     <div
       className={`flex flex-col items-center gap-1 p-1.5 rounded-lg border-2 transition-all duration-200 ${
         learn
-          ? 'border-c1 animate-[learn-pulse_1s_infinite]'
+          ? LEARN_BORDER
           : mapped !== null
             ? 'border-[rgba(0,221,119,0.12)]'
             : 'border-transparent'
