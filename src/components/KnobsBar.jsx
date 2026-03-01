@@ -4,7 +4,7 @@ import Knob from './Knob';
 export default function KnobsBar({ knobValues, maps, learn, learnTarget, onKnobChange, onLearnClick }) {
   return (
     <div className="bg-surface-1 rounded-[10px] p-2.5">
-      <div className="grid grid-cols-8 max-md:grid-cols-4 gap-[3px]">
+      <div className="grid grid-cols-9 max-md:grid-cols-3 gap-[3px]">
         {KNOB_DEFS.map((def, i) => (
           <Knob
             key={def.id}

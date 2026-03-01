@@ -31,7 +31,8 @@ export const SOUND_PRESETS = [
 ];
 
 export const KNOB_DEFS = [
-  { id: 'mode',   lbl: 'MODE',   min: 0, max: 3,     val: 0,    col: '#FF4444', fmt: v => ['DRAW', 'PLAY', 'SOUND', 'BEATS'][Math.round(v)] },
+  { id: 'hits',   lbl: 'HITS',   min: 0, max: 16,    val: 0,    col: '#FF4444', fmt: v => Math.round(v) },
+  { id: 'rotate', lbl: 'ROTATE', min: 0, max: 15,    val: 0,    col: '#B8A080', fmt: v => Math.round(v) },
   { id: 'track',  lbl: 'TRACK',  min: 0, max: 7,     val: 0,    col: '#B8A080', fmt: v => TRACKS[Math.round(v)].s },
   { id: 'tempo',  lbl: 'TEMPO',  min: 40, max: 300,   val: 120,  col: '#00FF88', fmt: v => Math.round(v) },
   { id: 'pitch',  lbl: 'PITCH',  min: 20, max: 2000,  val: 440,  col: '#00DD77' },

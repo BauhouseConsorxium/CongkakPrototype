@@ -1,6 +1,7 @@
 import { useReducer, useCallback, useRef, useEffect, useMemo } from 'react';
 import { TRACKS, TRACK_KEYS, KNOB_DEFS, SOUND_PRESETS, TRACK_PATTERNS } from './constants';
 import { playSound, initAudio, setMasterVolume } from './audio';
+import { euclidean as computeEuclidean } from './euclidean';
 
 const initialKnobValues = KNOB_DEFS.map(k => k.val);
 
@@ -18,21 +19,34 @@ function createInitialState() {
     logs: ['GLITCH::DUO ready', 'Space=play Tab=mode \u2191\u2193=track', '1234 QWER ASDF ZXCV = pads'],
     midiAccess: null,
     totalMidiMsgs: 0,
-    maps: { knobs: Array(8).fill(null), pads: Array(16).fill(null) },
+    maps: { knobs: Array(9).fill(null), pads: Array(16).fill(null) },
     learn: false,
     learnTarget: null,
     sidebarTab: 'dev',
+    euclidean: TRACKS.map(() => ({ hits: 0, rotation: 0, manual: false })),
   };
 }
 
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_MODE':
-      return { ...state, mode: action.mode, knobValues: state.knobValues.map((v, i) => i === 0 ? action.mode : v) };
-    case 'SET_TRACK':
-      return { ...state, selTrack: action.track, knobValues: state.knobValues.map((v, i) => i === 1 ? action.track : v) };
+      return { ...state, mode: action.mode };
+    case 'SET_TRACK': {
+      const t = action.track;
+      const eucl = state.euclidean[t];
+      return {
+        ...state,
+        selTrack: t,
+        knobValues: state.knobValues.map((v, i) => {
+          if (i === 0) return eucl.hits;
+          if (i === 1) return eucl.rotation;
+          if (i === 2) return t;
+          return v;
+        }),
+      };
+    }
     case 'SET_BPM':
-      return { ...state, bpm: action.bpm, knobValues: state.knobValues.map((v, i) => i === 2 ? action.bpm : v) };
+      return { ...state, bpm: action.bpm, knobValues: state.knobValues.map((v, i) => i === 3 ? action.bpm : v) };
     case 'SET_PLAYING':
       return { ...state, playing: action.playing, curStep: action.playing ? state.curStep : -1 };
     case 'TICK':
@@ -41,7 +55,9 @@ function reducer(state, action) {
       const newSeq = state.seq.map((row, ri) =>
         ri === state.selTrack ? row.map((v, ci) => ci === action.step ? !v : v) : row
       );
-      return { ...state, seq: newSeq };
+      const newEucl = [...state.euclidean];
+      newEucl[state.selTrack] = { ...newEucl[state.selTrack], manual: true };
+      return { ...state, seq: newSeq, euclidean: newEucl };
     }
     case 'SET_PATTERN': {
       const { trackIdx, patIdx, pattern, name } = action;
@@ -50,26 +66,64 @@ function reducer(state, action) {
       newActivePat[trackIdx] = patIdx;
       const newPatName = [...state.curPatName];
       newPatName[trackIdx] = name;
-      return { ...state, seq: newSeq, activePatPerTrack: newActivePat, curPatName: newPatName };
+      const newEuclP = [...state.euclidean];
+      newEuclP[trackIdx] = { hits: pattern.filter(Boolean).length, rotation: 0, manual: true };
+      return { ...state, seq: newSeq, activePatPerTrack: newActivePat, curPatName: newPatName, euclidean: newEuclP };
     }
     case 'SET_KNOB_VALUE': {
       const newKV = [...state.knobValues];
       newKV[action.index] = action.value;
       const extra = {};
-      if (action.index === 0) extra.mode = Math.round(Math.max(0, Math.min(3, action.value)));
-      if (action.index === 1) extra.selTrack = Math.round(Math.max(0, Math.min(7, action.value)));
-      if (action.index === 2) extra.bpm = Math.round(Math.max(40, Math.min(300, action.value)));
+      if (action.index === 0) {
+        const hits = Math.round(Math.max(0, Math.min(16, action.value)));
+        const ti = state.selTrack;
+        const newEuclK = [...state.euclidean];
+        const rot = newEuclK[ti].rotation;
+        newEuclK[ti] = { hits, rotation: rot, manual: false };
+        extra.euclidean = newEuclK;
+        extra.seq = state.seq.map((row, ri) => ri === ti ? computeEuclidean(hits, rot) : row);
+      }
+      if (action.index === 1) {
+        const rotation = Math.round(Math.max(0, Math.min(15, action.value)));
+        const ti = state.selTrack;
+        const newEuclK = [...state.euclidean];
+        const h = newEuclK[ti].hits;
+        newEuclK[ti] = { hits: h, rotation, manual: false };
+        extra.euclidean = newEuclK;
+        extra.seq = state.seq.map((row, ri) => ri === ti ? computeEuclidean(h, rotation) : row);
+      }
+      if (action.index === 2) {
+        const t = Math.round(Math.max(0, Math.min(7, action.value)));
+        extra.selTrack = t;
+        const eucl = state.euclidean[t];
+        newKV[0] = eucl.hits;
+        newKV[1] = eucl.rotation;
+      }
+      if (action.index === 3) extra.bpm = Math.round(Math.max(40, Math.min(300, action.value)));
       return { ...state, knobValues: newKV, ...extra };
+    }
+    case 'SET_EUCLIDEAN': {
+      const { trackIdx, hits, rotation } = action;
+      const newEuclE = [...state.euclidean];
+      newEuclE[trackIdx] = {
+        hits: hits !== undefined ? hits : newEuclE[trackIdx].hits,
+        rotation: rotation !== undefined ? rotation : newEuclE[trackIdx].rotation,
+        manual: false,
+      };
+      const newSeqE = state.seq.map((row, ri) =>
+        ri === trackIdx ? computeEuclidean(newEuclE[trackIdx].hits, newEuclE[trackIdx].rotation) : row
+      );
+      return { ...state, euclidean: newEuclE, seq: newSeqE };
     }
     case 'APPLY_SOUND_PRESET': {
       const s = SOUND_PRESETS[action.index];
       if (!s) return state;
       const newKV = [...state.knobValues];
-      newKV[3] = s.v[0];
-      newKV[6] = s.v[1];
-      newKV[4] = s.v[2];
-      newKV[5] = s.v[3];
-      newKV[7] = s.v[5];
+      newKV[4] = s.v[0];
+      newKV[7] = s.v[1];
+      newKV[5] = s.v[2];
+      newKV[6] = s.v[3];
+      newKV[8] = s.v[5];
       return { ...state, knobValues: newKV };
     }
     case 'LOG':
@@ -105,7 +159,7 @@ function reducer(state, action) {
       return { ...state, maps: newMaps };
     }
     case 'CLEAR_ALL_MAPS':
-      return { ...state, maps: { knobs: Array(8).fill(null), pads: Array(16).fill(null) } };
+      return { ...state, maps: { knobs: Array(9).fill(null), pads: Array(16).fill(null) } };
     case 'SET_MIDI_ACCESS':
       return { ...state, midiAccess: action.access };
     case 'INC_MIDI_MSGS':
@@ -116,7 +170,7 @@ function reducer(state, action) {
 }
 
 function getKnobObj(kv) {
-  return { pitch: kv[3], decay: kv[4], filter: kv[5], glitch: kv[6], volume: kv[7] };
+  return { pitch: kv[4], decay: kv[5], filter: kv[6], glitch: kv[7], volume: kv[8] };
 }
 
 export function useStore() {
@@ -182,6 +236,9 @@ export function useStore() {
 
   const setMode = useCallback((m) => dispatch({ type: 'SET_MODE', mode: m }), []);
   const setTrack = useCallback((t) => dispatch({ type: 'SET_TRACK', track: t }), []);
+  const setEuclidean = useCallback((trackIdx, hits, rotation) => {
+    dispatch({ type: 'SET_EUCLIDEAN', trackIdx, hits, rotation });
+  }, []);
 
   const triggerPad = useCallback((i, vel = 1) => {
     initAudio();
@@ -214,11 +271,11 @@ export function useStore() {
 
   const setKnobValue = useCallback((index, value) => {
     dispatch({ type: 'SET_KNOB_VALUE', index, value });
-    if (index === 2) {
+    if (index === 3) {
       const nb = Math.round(Math.max(40, Math.min(300, value)));
       workerRef.current?.postMessage({ type: 'setBpm', bpm: nb });
     }
-    if (index === 7) setMasterVolume(value / 100);
+    if (index === 8) setMasterVolume(value / 100);
   }, []);
 
   const log = useCallback((msg) => dispatch({ type: 'LOG', msg }), []);
@@ -302,11 +359,11 @@ export function useStore() {
           const kdef = KNOB_DEFS[ki];
           const val = kdef.min + (d2 / 127) * (kdef.max - kdef.min);
           dispatch({ type: 'SET_KNOB_VALUE', index: ki, value: val });
-          if (ki === 2) {
+          if (ki === 3) {
             const nb = Math.round(Math.max(40, Math.min(300, val)));
             workerRef.current?.postMessage({ type: 'setBpm', bpm: nb });
           }
-          if (ki === 7) setMasterVolume(val / 100);
+          if (ki === 8) setMasterVolume(val / 100);
         }
       }
     }
@@ -347,12 +404,12 @@ export function useStore() {
 
   // Stable actions object - never changes identity
   const actions = useMemo(() => ({
-    togglePlay, stop, setBpm, setMode, setTrack, triggerPad, setKnobValue,
+    togglePlay, stop, setBpm, setMode, setTrack, setEuclidean, triggerPad, setKnobValue,
     log, clearLogs, setSidebarTab, toggleLearn, setLearnTarget,
     mapKnob, mapPad, clearMapKnob, clearMapPad, clearAllMaps,
     saveMaps, loadMaps, scanMidi, processMidi, dispatch,
   }), [
-    togglePlay, stop, setBpm, setMode, setTrack, triggerPad, setKnobValue,
+    togglePlay, stop, setBpm, setMode, setTrack, setEuclidean, triggerPad, setKnobValue,
     log, clearLogs, setSidebarTab, toggleLearn, setLearnTarget,
     mapKnob, mapPad, clearMapKnob, clearMapPad, clearAllMaps,
     saveMaps, loadMaps, scanMidi, processMidi,

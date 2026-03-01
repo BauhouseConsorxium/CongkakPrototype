@@ -6,7 +6,7 @@ import Header from './components/Header';
 import ModeBar from './components/ModeBar';
 import TrackBar from './components/TrackBar';
 import Transport from './components/Transport';
-import SequencerGrid from './components/SequencerGrid';
+import EuclideanRing from './components/EuclideanRing';
 import Waveform from './components/Waveform';
 import KnobsBar from './components/KnobsBar';
 import PadsGrid from './components/PadsGrid';
@@ -76,12 +76,15 @@ export default function App() {
             onStop={actions.stop}
             onSetBpm={actions.setBpm}
           />
-          <SequencerGrid
+          <EuclideanRing
             seq={state.seq}
             curStep={state.curStep}
             selTrack={state.selTrack}
+            euclidean={state.euclidean}
             curPatName={state.curPatName}
             bpm={state.bpm}
+            onToggleStep={(step) => actions.dispatch({ type: 'TOGGLE_STEP', step })}
+            onSelectTrack={actions.setTrack}
           />
           <Waveform />
           <KnobsBar
