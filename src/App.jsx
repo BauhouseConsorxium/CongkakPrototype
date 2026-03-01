@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useStore } from './store';
 import { initAudio } from './audio';
-import { KEY_MAP } from './constants';
+import { KEY_MAP, TRACKS } from './constants';
 import Header from './components/Header';
 import ModeBar from './components/ModeBar';
 import TrackBar from './components/TrackBar';
@@ -9,6 +9,7 @@ import Transport from './components/Transport';
 import EuclideanRing from './components/EuclideanRing';
 import LcdDisplay from './components/LcdDisplay';
 import Waveform from './components/Waveform';
+import SampleEditor from './components/SampleEditor';
 import KnobsBar from './components/KnobsBar';
 import PadsGrid from './components/PadsGrid';
 import Sidebar from './components/Sidebar';
@@ -70,7 +71,7 @@ export default function App() {
       <div className={`grid ${showSidebar ? 'grid-cols-[1fr_320px]' : 'grid-cols-1'} max-md:grid-cols-1 min-h-[calc(100vh-52px)]`}>
         <div className="p-3.5 flex flex-col gap-2.5">
           <ModeBar mode={state.mode} onSetMode={actions.setMode} />
-          <TrackBar selTrack={state.selTrack} onSetTrack={actions.setTrack} />
+          <TrackBar selTrack={state.selTrack} onSetTrack={actions.setTrack} samples={state.samples} />
           <Transport
             playing={state.playing}
             bpm={state.bpm}
@@ -97,6 +98,19 @@ export default function App() {
                 <div className="w-full">
                   <Waveform />
                 </div>
+              </div>
+              <div className="w-full px-1 pb-1">
+                <SampleEditor
+                  trackIndex={state.selTrack}
+                  trackColor={TRACKS[state.selTrack].col}
+                  sample={state.samples[state.selTrack]}
+                  recording={state.recording}
+                  onStartRec={actions.startRec}
+                  onStopRec={actions.stopRec}
+                  onClearSample={actions.clearSample}
+                  onLoadFile={actions.loadSampleFile}
+                  onSetRegion={actions.setSampleRegion}
+                />
               </div>
             </div>
           </div>

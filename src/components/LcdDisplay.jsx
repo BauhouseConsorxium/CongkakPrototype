@@ -114,7 +114,8 @@ function drawWayang(ctx, state, animFrame) {
 
 function drawStatusRows(ctx, state) {
   // PAT + VOL (y=38)
-  const patName = state.curPatName[state.selTrack] || '\u2014';
+  const hasSmp = state.samples && state.samples[state.selTrack];
+  const patName = hasSmp ? 'SMP' : (state.curPatName[state.selTrack] || '\u2014');
   const patText = 'PAT:' + patName;
   const volVal = String(Math.round(state.knobValues[8]));
   const volText = 'VOL:' + volVal;

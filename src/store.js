@@ -1,6 +1,11 @@
 import { useReducer, useCallback, useRef, useEffect, useMemo } from 'react';
 import { TRACKS, TRACK_KEYS, KNOB_DEFS, SOUND_PRESETS, TRACK_PATTERNS } from './constants';
-import { playSound, initAudio, setMasterVolume } from './audio';
+import {
+  playSound, initAudio, setMasterVolume, getAudioContext,
+  startRecording, stopRecording, isRecording,
+  setSampleForTrack, clearSampleForTrack, setSampleRegion as audioSetSampleRegion,
+  getSampleBuffer,
+} from './audio';
 import { euclidean as computeEuclidean } from './euclidean';
 
 const initialKnobValues = KNOB_DEFS.map(k => k.val);
@@ -24,6 +29,8 @@ function createInitialState() {
     learnTarget: null,
     sidebarTab: 'dev',
     euclidean: TRACKS.map(() => ({ hits: 0, rotation: 0, manual: false })),
+    recording: false,
+    samples: Array(8).fill(null),
   };
 }
 
@@ -164,6 +171,25 @@ function reducer(state, action) {
       return { ...state, midiAccess: action.access };
     case 'INC_MIDI_MSGS':
       return { ...state, totalMidiMsgs: state.totalMidiMsgs + 1 };
+    case 'SET_RECORDING':
+      return { ...state, recording: action.recording };
+    case 'SET_SAMPLE': {
+      const newSamples = [...state.samples];
+      newSamples[action.trackIndex] = { duration: action.duration, waveform: action.waveform, region: { start: 0, end: 1 } };
+      return { ...state, samples: newSamples, recording: false };
+    }
+    case 'CLEAR_SAMPLE': {
+      const newSamples = [...state.samples];
+      newSamples[action.trackIndex] = null;
+      return { ...state, samples: newSamples };
+    }
+    case 'SET_SAMPLE_REGION': {
+      const newSamples = [...state.samples];
+      if (newSamples[action.trackIndex]) {
+        newSamples[action.trackIndex] = { ...newSamples[action.trackIndex], region: { start: action.start, end: action.end } };
+      }
+      return { ...state, samples: newSamples };
+    }
     default:
       return state;
   }
@@ -171,6 +197,22 @@ function reducer(state, action) {
 
 function getKnobObj(kv) {
   return { pitch: kv[4], decay: kv[5], filter: kv[6], glitch: kv[7], volume: kv[8] };
+}
+
+function downsampleWaveform(audioBuffer, points = 256) {
+  const data = audioBuffer.getChannelData(0);
+  const blockSize = Math.floor(data.length / points);
+  const peaks = new Float32Array(points);
+  for (let i = 0; i < points; i++) {
+    let max = 0;
+    const start = i * blockSize;
+    for (let j = 0; j < blockSize; j++) {
+      const abs = Math.abs(data[start + j]);
+      if (abs > max) max = abs;
+    }
+    peaks[i] = max;
+  }
+  return peaks;
 }
 
 export function useStore() {
@@ -190,7 +232,7 @@ export function useStore() {
         const knobs = getKnobObj(s.knobValues);
         for (let r = 0; r < 8; r++) {
           if (s.seq[r][nextStep]) {
-            playSound(TRACKS[r].id, knobs, 0.65);
+            playSound(TRACKS[r].id, knobs, 0.65, r);
           }
         }
       }
@@ -248,7 +290,7 @@ export function useStore() {
     if (s.mode === 0) {
       dispatch({ type: 'TOGGLE_STEP', step: i });
     } else if (s.mode === 1) {
-      playSound(TRACKS[i % 8].id, knobs, vel);
+      playSound(TRACKS[i % 8].id, knobs, vel, i % 8);
     } else if (s.mode === 2) {
       dispatch({ type: 'APPLY_SOUND_PRESET', index: i });
       dispatch({ type: 'LOG', msg: 'Sound: ' + (SOUND_PRESETS[i]?.n || '?') });
@@ -264,7 +306,7 @@ export function useStore() {
           name: pats[i].n,
         });
         dispatch({ type: 'LOG', msg: TRACKS[s.selTrack].s + ' \u2192 ' + pats[i].n });
-        if (pats[i].p.some(v => v)) playSound(TRACKS[s.selTrack].id, knobs, 0.4);
+        if (pats[i].p.some(v => v)) playSound(TRACKS[s.selTrack].id, knobs, 0.4, s.selTrack);
       }
     }
   }, []);
@@ -281,6 +323,73 @@ export function useStore() {
   const log = useCallback((msg) => dispatch({ type: 'LOG', msg }), []);
   const clearLogs = useCallback(() => dispatch({ type: 'CLEAR_LOGS' }), []);
   const setSidebarTab = useCallback((tab) => dispatch({ type: 'SET_SIDEBAR_TAB', tab }), []);
+  const startRec = useCallback(async () => {
+    const s = stateRef.current;
+    if (s.recording) return;
+    try {
+      initAudio();
+      await startRecording();
+      dispatch({ type: 'SET_RECORDING', recording: true });
+      dispatch({ type: 'LOG', msg: 'Recording...' });
+      // Auto-stop after 5s
+      setTimeout(() => {
+        if (isRecording()) {
+          stopRec(stateRef.current.selTrack);
+        }
+      }, 5000);
+    } catch (e) {
+      dispatch({ type: 'LOG', msg: 'Mic error: ' + e.message });
+    }
+  }, []);
+
+  const stopRec = useCallback(async (trackIdx) => {
+    try {
+      const audioBuf = await stopRecording();
+      setSampleForTrack(trackIdx, audioBuf);
+      const waveform = downsampleWaveform(audioBuf, 256);
+      dispatch({ type: 'SET_SAMPLE', trackIndex: trackIdx, duration: audioBuf.duration, waveform });
+      dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' sample: ' + audioBuf.duration.toFixed(1) + 's' });
+    } catch (e) {
+      dispatch({ type: 'SET_RECORDING', recording: false });
+      dispatch({ type: 'LOG', msg: 'Rec error: ' + e.message });
+    }
+  }, []);
+
+  const clearSample = useCallback((trackIdx) => {
+    clearSampleForTrack(trackIdx);
+    dispatch({ type: 'CLEAR_SAMPLE', trackIndex: trackIdx });
+    dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' sample cleared' });
+  }, []);
+
+  const loadSampleFile = useCallback(async (trackIdx, file) => {
+    try {
+      initAudio();
+      const ac = getAudioContext();
+      const arrayBuf = await file.arrayBuffer();
+      const audioBuf = await ac.decodeAudioData(arrayBuf);
+      // Enforce 5s max
+      const maxSamples = ac.sampleRate * 5;
+      let buf = audioBuf;
+      if (audioBuf.length > maxSamples) {
+        buf = ac.createBuffer(audioBuf.numberOfChannels, maxSamples, ac.sampleRate);
+        for (let ch = 0; ch < audioBuf.numberOfChannels; ch++) {
+          buf.copyToChannel(audioBuf.getChannelData(ch).slice(0, maxSamples), ch);
+        }
+      }
+      setSampleForTrack(trackIdx, buf);
+      const waveform = downsampleWaveform(buf, 256);
+      dispatch({ type: 'SET_SAMPLE', trackIndex: trackIdx, duration: buf.duration, waveform });
+      dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' loaded: ' + file.name });
+    } catch (e) {
+      dispatch({ type: 'LOG', msg: 'Load error: ' + e.message });
+    }
+  }, []);
+
+  const setSampleRegion = useCallback((trackIdx, start, end) => {
+    audioSetSampleRegion(trackIdx, start, end);
+    dispatch({ type: 'SET_SAMPLE_REGION', trackIndex: trackIdx, start, end });
+  }, []);
+
   const toggleLearn = useCallback(() => {
     dispatch({ type: 'SET_LEARN', learn: !stateRef.current.learn });
   }, []);
@@ -336,7 +445,7 @@ export function useStore() {
           if (s.mode === 0) {
             dispatch({ type: 'TOGGLE_STEP', step: pi });
           } else if (s.mode === 1) {
-            playSound(TRACKS[pi % 8].id, knobs, d2 / 127);
+            playSound(TRACKS[pi % 8].id, knobs, d2 / 127, pi % 8);
           } else if (s.mode === 2) {
             dispatch({ type: 'APPLY_SOUND_PRESET', index: pi });
           } else if (s.mode === 3) {
@@ -405,12 +514,16 @@ export function useStore() {
   // Stable actions object - never changes identity
   const actions = useMemo(() => ({
     togglePlay, stop, setBpm, setMode, setTrack, setEuclidean, triggerPad, setKnobValue,
-    log, clearLogs, setSidebarTab, toggleLearn, setLearnTarget,
+    log, clearLogs, setSidebarTab,
+    startRec, stopRec, clearSample, loadSampleFile, setSampleRegion,
+    toggleLearn, setLearnTarget,
     mapKnob, mapPad, clearMapKnob, clearMapPad, clearAllMaps,
     saveMaps, loadMaps, scanMidi, processMidi, dispatch,
   }), [
     togglePlay, stop, setBpm, setMode, setTrack, setEuclidean, triggerPad, setKnobValue,
-    log, clearLogs, setSidebarTab, toggleLearn, setLearnTarget,
+    log, clearLogs, setSidebarTab,
+    startRec, stopRec, clearSample, loadSampleFile, setSampleRegion,
+    toggleLearn, setLearnTarget,
     mapKnob, mapPad, clearMapKnob, clearMapPad, clearAllMaps,
     saveMaps, loadMaps, scanMidi, processMidi,
   ]);
