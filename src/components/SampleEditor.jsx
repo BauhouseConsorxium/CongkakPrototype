@@ -9,7 +9,8 @@ const CANVAS_H = 80;
 export default function SampleEditor({ trackIndex, trackColor, sample, recording, onStartRec, onStopRec, onClearSample, onLoadFile, onSetRegion }) {
   const canvasRef = useRef(null);
   const fileRef = useRef(null);
-  const dragging = useRef(null); // 'start' | 'end' | null
+  const dragging = useRef(null); // 'start' | 'end' | 'center' | null
+  const dragOffset = useRef(0); // offset from click to region.start for center drag
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -80,7 +81,17 @@ export default function SampleEditor({ trackIndex, trackColor, sample, recording
     const { region } = sample;
     const startDist = Math.abs(x - region.start);
     const endDist = Math.abs(x - region.end);
-    dragging.current = startDist < endDist ? 'start' : 'end';
+    const handleThreshold = 0.04; // snap to handle if within 4% of canvas width
+    if (startDist < handleThreshold && startDist <= endDist) {
+      dragging.current = 'start';
+    } else if (endDist < handleThreshold) {
+      dragging.current = 'end';
+    } else if (x > region.start && x < region.end) {
+      dragging.current = 'center';
+      dragOffset.current = x - region.start;
+    } else {
+      dragging.current = startDist < endDist ? 'start' : 'end';
+    }
     canvas.setPointerCapture(e.pointerId);
   }, [sample]);
 
@@ -94,9 +105,15 @@ export default function SampleEditor({ trackIndex, trackColor, sample, recording
     if (dragging.current === 'start') {
       const newStart = Math.min(x, region.end - 0.02);
       onSetRegion(trackIndex, Math.max(0, newStart), region.end);
-    } else {
+    } else if (dragging.current === 'end') {
       const newEnd = Math.max(x, region.start + 0.02);
       onSetRegion(trackIndex, region.start, Math.min(1, newEnd));
+    } else if (dragging.current === 'center') {
+      const len = region.end - region.start;
+      let newStart = x - dragOffset.current;
+      if (newStart < 0) newStart = 0;
+      if (newStart + len > 1) newStart = 1 - len;
+      onSetRegion(trackIndex, newStart, newStart + len);
     }
   }, [sample, trackIndex, onSetRegion]);
 
@@ -172,7 +189,7 @@ export default function SampleEditor({ trackIndex, trackColor, sample, recording
           height: CANVAS_H,
           borderRadius: 4,
           background: BG,
-          cursor: sample ? 'col-resize' : 'default',
+          cursor: sample ? (dragging.current === 'center' ? 'grabbing' : 'col-resize') : 'default',
           touchAction: 'none',
         }}
       />
