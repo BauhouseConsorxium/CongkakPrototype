@@ -103,6 +103,7 @@ export default function App() {
                 <SampleEditor
                   trackIndex={state.selTrack}
                   trackColor={TRACKS[state.selTrack].col}
+                  trackName={TRACKS[state.selTrack].id}
                   sample={state.samples[state.selTrack]}
                   recording={state.recording}
                   onStartRec={actions.startRec}

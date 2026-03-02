@@ -90,6 +90,48 @@ export function getSampleBuffer(trackIndex) { return sampleBuffers[trackIndex]; 
 export function getSampleRegion(trackIndex) { return sampleRegions[trackIndex]; }
 export function hasSample(trackIndex) { return sampleBuffers[trackIndex] !== null; }
 
+export function exportSampleAsWav(trackIndex) {
+  const buf = sampleBuffers[trackIndex];
+  if (!buf) return null;
+  const region = sampleRegions[trackIndex] || { start: 0, end: 1 };
+  const sr = buf.sampleRate;
+  const startSample = Math.floor(region.start * buf.length);
+  const endSample = Math.floor(region.end * buf.length);
+  const len = endSample - startSample;
+  const numCh = buf.numberOfChannels;
+  const dataBytes = len * numCh * 2; // 16-bit
+  const headerSize = 44;
+  const ab = new ArrayBuffer(headerSize + dataBytes);
+  const view = new DataView(ab);
+  // RIFF header
+  const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataBytes, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, sr, true);
+  view.setUint32(28, sr * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataBytes, true);
+  // Interleave channels
+  const channels = [];
+  for (let ch = 0; ch < numCh; ch++) channels.push(buf.getChannelData(ch));
+  let off = 44;
+  for (let i = 0; i < len; i++) {
+    for (let ch = 0; ch < numCh; ch++) {
+      const s = Math.max(-1, Math.min(1, channels[ch][startSample + i]));
+      view.setInt16(off, s * 0x7FFF, true);
+      off += 2;
+    }
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+}
+
 export function initAudio() {
   if (ac) return;
   ac = new AudioContext();

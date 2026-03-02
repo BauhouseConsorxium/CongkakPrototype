@@ -7,6 +7,7 @@ import {
   getSampleBuffer,
 } from './audio';
 import { euclidean as computeEuclidean } from './euclidean';
+import { saveSample, deleteSample, saveRegion, loadAllSamples } from './sample-db';
 
 const initialKnobValues = KNOB_DEFS.map(k => k.val);
 
@@ -252,6 +253,23 @@ export function useStore() {
     } catch {}
   }, []);
 
+  // Restore saved samples from IndexedDB
+  useEffect(() => {
+    initAudio();
+    const ac = getAudioContext();
+    if (!ac) return;
+    loadAllSamples(ac).then(entries => {
+      for (const { trackIndex, audioBuffer, region } of entries) {
+        setSampleForTrack(trackIndex, audioBuffer);
+        audioSetSampleRegion(trackIndex, region.start, region.end);
+        const waveform = downsampleWaveform(audioBuffer, 256);
+        dispatch({ type: 'SET_SAMPLE', trackIndex, duration: audioBuffer.duration, waveform });
+        dispatch({ type: 'SET_SAMPLE_REGION', trackIndex, start: region.start, end: region.end });
+      }
+      if (entries.length) dispatch({ type: 'LOG', msg: entries.length + ' sample(s) restored' });
+    }).catch(() => {});
+  }, []);
+
   // All actions use stateRef so they're stable with [] deps
   const togglePlay = useCallback(() => {
     initAudio();
@@ -349,6 +367,7 @@ export function useStore() {
       const waveform = downsampleWaveform(audioBuf, 256);
       dispatch({ type: 'SET_SAMPLE', trackIndex: trackIdx, duration: audioBuf.duration, waveform });
       dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' sample: ' + audioBuf.duration.toFixed(1) + 's' });
+      saveSample(trackIdx, audioBuf, { start: 0, end: 1 }).catch(() => {});
     } catch (e) {
       dispatch({ type: 'SET_RECORDING', recording: false });
       dispatch({ type: 'LOG', msg: 'Rec error: ' + e.message });
@@ -359,6 +378,7 @@ export function useStore() {
     clearSampleForTrack(trackIdx);
     dispatch({ type: 'CLEAR_SAMPLE', trackIndex: trackIdx });
     dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' sample cleared' });
+    deleteSample(trackIdx).catch(() => {});
   }, []);
 
   const loadSampleFile = useCallback(async (trackIdx, file) => {
@@ -390,6 +410,7 @@ export function useStore() {
       const waveform = downsampleWaveform(buf, 256);
       dispatch({ type: 'SET_SAMPLE', trackIndex: trackIdx, duration: buf.duration, waveform });
       dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' loaded: ' + file.name });
+      saveSample(trackIdx, buf, { start: 0, end: 1 }).catch(() => {});
     } catch (e) {
       dispatch({ type: 'LOG', msg: 'Load error: ' + e.message });
     }
@@ -398,6 +419,7 @@ export function useStore() {
   const setSampleRegion = useCallback((trackIdx, start, end) => {
     audioSetSampleRegion(trackIdx, start, end);
     dispatch({ type: 'SET_SAMPLE_REGION', trackIndex: trackIdx, start, end });
+    saveRegion(trackIdx, { start, end }).catch(() => {});
   }, []);
 
   const toggleLearn = useCallback(() => {

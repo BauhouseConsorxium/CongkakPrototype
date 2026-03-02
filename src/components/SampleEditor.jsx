@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react';
+import { exportSampleAsWav } from '../audio';
 
 const BG = '#0a1a0a';
 const PRIMARY = '#00FF88';
@@ -6,7 +7,7 @@ const DIM = '#003318';
 const MARKER = '#FF4444';
 const CANVAS_H = 80;
 
-export default function SampleEditor({ trackIndex, trackColor, sample, recording, onStartRec, onStopRec, onClearSample, onLoadFile, onSetRegion }) {
+export default function SampleEditor({ trackIndex, trackColor, sample, recording, onStartRec, onStopRec, onClearSample, onLoadFile, onSetRegion, trackName }) {
   const canvasRef = useRef(null);
   const fileRef = useRef(null);
   const dragging = useRef(null); // 'start' | 'end' | 'center' | null
@@ -164,6 +165,22 @@ export default function SampleEditor({ trackIndex, trackColor, sample, recording
         )}
         {sample && !recording && (
           <>
+            <button
+              onClick={() => {
+                const blob = exportSampleAsWav(trackIndex);
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = (trackName || 'sample') + '.wav';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="font-mono text-[9px] tracking-[0.5px] px-1.5 py-0.5 rounded border cursor-pointer transition-colors duration-100"
+              style={{ color: PRIMARY, borderColor: '#004d26', background: 'transparent' }}
+            >
+              SAVE
+            </button>
             <button
               onClick={() => onClearSample(trackIndex)}
               className="font-mono text-[9px] tracking-[0.5px] px-1.5 py-0.5 rounded border cursor-pointer transition-colors duration-100"
