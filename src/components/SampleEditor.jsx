@@ -152,7 +152,7 @@ export default function SampleEditor({ trackIndex, trackColor, sample, recording
             <input
               ref={fileRef}
               type="file"
-              accept="audio/*,.wav,.mp3,.ogg,.flac,.aif,.aiff"
+              accept="audio/*,.wav,.mp3,.ogg,.flac,.aif,.aiff,.raw"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];

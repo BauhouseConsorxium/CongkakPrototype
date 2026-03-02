@@ -366,7 +366,17 @@ export function useStore() {
       initAudio();
       const ac = getAudioContext();
       const arrayBuf = await file.arrayBuffer();
-      const audioBuf = await ac.decodeAudioData(arrayBuf);
+      let audioBuf;
+      if (file.name.toLowerCase().endsWith('.raw')) {
+        // Raw PCM: assume signed 16-bit little-endian mono at context sample rate
+        const int16 = new Int16Array(arrayBuf);
+        const floats = new Float32Array(int16.length);
+        for (let i = 0; i < int16.length; i++) floats[i] = int16[i] / 32768;
+        audioBuf = ac.createBuffer(1, floats.length, ac.sampleRate);
+        audioBuf.copyToChannel(floats, 0);
+      } else {
+        audioBuf = await ac.decodeAudioData(arrayBuf);
+      }
       // Enforce 5s max
       const maxSamples = ac.sampleRate * 5;
       let buf = audioBuf;
