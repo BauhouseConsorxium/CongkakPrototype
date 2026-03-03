@@ -1,10 +1,21 @@
 # Agentic Workflow — cmux + Claude Code
 
-This document defines how Claude Code should work with cmux to parallelize tasks using visible, context-aware agent sessions.
+This document defines how Claude Code should parallelize tasks using **visible Claude Code sessions in cmux**, NOT the built-in subprocess Agent tool.
+
+## Why cmux Instead of Agent Tool
+
+The built-in Agent tool spawns invisible subprocesses — the user can't see what they're doing, can't interact, and can't interrupt. Instead, we spawn full `claude` CLI sessions in cmux workspaces:
+
+- **Visible** — each agent runs in its own cmux tab, user watches live
+- **Interactive** — user can type corrections mid-task or interrupt
+- **Context-aware** — `--fork-session` copies the full conversation history so agents know everything discussed
+- **Isolated** — each agent gets its own git worktree via `-w`
+
+**NEVER use the Agent tool for parallel work. Always use cmux + claude CLI.**
 
 ## Core Principle
 
-When a task can be split into independent work streams (features, refactors, bug fixes), **proactively offer to spawn parallel agents in cmux workspaces**. Each agent gets its own git worktree and a forked copy of the current conversation context.
+When a task can be split into independent work streams (features, refactors, bug fixes), **proactively offer to spawn parallel Claude Code sessions in cmux workspaces**. Each agent gets its own git worktree and a forked copy of the current conversation context.
 
 ## When to Offer Agent Spawning
 

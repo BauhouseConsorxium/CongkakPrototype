@@ -81,7 +81,9 @@ Web MIDI (Chrome/Edge). Learn mode: user clicks LEARN → clicks a UI control �
 
 ## Agentic Workflow
 
-When the user requests 2+ independent features or tasks, **proactively offer to spawn parallel agents** in cmux workspaces. Always explain what will be spawned and ask before launching.
+**IMPORTANT: Do NOT use the built-in Agent tool to spawn subprocess agents.** Instead, spawn visible Claude Code sessions in cmux workspaces using the `claude` CLI with `--resume <session-id> --fork-session`. This gives the user full visibility — they can watch, interact with, and interrupt any agent.
+
+When the user requests 2+ independent features or tasks, **proactively offer to spawn parallel Claude Code sessions in cmux**. Always explain what will be spawned and ask before launching.
 
 Before spawning agents, **read `AGENTIC-WORKFLOW.md`** for the full cmux spawn commands, monitoring, worktree management, and task decomposition rules. If working in a worktree, also read it to understand the conventions.
 
