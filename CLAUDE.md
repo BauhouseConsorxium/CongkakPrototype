@@ -79,6 +79,12 @@ Web MIDI (Chrome/Edge). Learn mode: user clicks LEARN → clicks a UI control �
 - **`SequencerGrid.jsx` is dead code** — never imported. Legacy component.
 - **Package name** is still `glitch-duo` in `package.json`, localStorage key is `gd_maps`. Vestigial from previous project name.
 
+## Agentic Workflow
+
+When the user requests 2+ independent features or tasks, **proactively offer to spawn parallel agents** in cmux workspaces. Always explain what will be spawned and ask before launching.
+
+Before spawning agents, **read `AGENTIC-WORKFLOW.md`** for the full cmux spawn commands, monitoring, worktree management, and task decomposition rules. If working in a worktree, also read it to understand the conventions.
+
 ## Refactoring
 
 See `REFACTOR.md` for the full prioritized roadmap (P0 through P3) covering architectural changes, bugs, performance issues, and missing hardware features.
