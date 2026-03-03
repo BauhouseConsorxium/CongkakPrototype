@@ -198,6 +198,17 @@ export const MODE_DESCS = [
   'Pads load pattern for selected track',
 ];
 
+export const AI_VIBES = [
+  { n: 'DARK',    desc: 'dark minimal techno, sparse, hypnotic' },
+  { n: 'ACID',    desc: 'acid house, squelchy 303 bass, driving' },
+  { n: 'DUB',     desc: 'dub techno, deep chords, echo, space' },
+  { n: 'CHILL',   desc: 'lo-fi ambient, gentle, downtempo' },
+  { n: 'FUNK',    desc: 'funky breakbeat, syncopated, groovy' },
+  { n: 'CHAOS',   desc: 'glitch, broken beats, experimental' },
+  { n: 'INDUST',  desc: 'industrial techno, hard, distorted' },
+  { n: 'AFRO',    desc: 'afrobeat polyrhythm, layered percussion' },
+];
+
 export const LEARN_BORDER = 'border-c1 animate-[learn-pulse_1s_infinite]';
 
 export const KEY_MAP = {};

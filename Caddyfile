@@ -1,0 +1,13 @@
+test.localhost {
+	# Proxy API calls to the remote endpoint
+	handle /v1/* {
+		reverse_proxy https://claude.static.pawonmburi.com {
+			header_up Host claude.static.pawonmburi.com
+		}
+	}
+
+	# Proxy everything else to Vite dev server
+	handle {
+		reverse_proxy localhost:5173
+	}
+}

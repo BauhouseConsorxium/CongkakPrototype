@@ -194,6 +194,21 @@ export default function SampleEditor({ trackIndex, trackColor, sample, recording
           </>
         )}
       </div>
+      {sample?.label && (
+        <div className="flex items-center gap-1.5 mb-1">
+          <span
+            className="font-mono text-[9px] font-bold tracking-[1px] px-1.5 py-0.5 rounded"
+            style={{ color: '#0a1a0a', background: trackColor }}
+          >
+            {sample.label.type.toUpperCase()}
+          </span>
+          {sample.label.tags.map((tag, i) => (
+            <span key={i} className="font-mono text-[9px] tracking-[0.5px]" style={{ color: DIM }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
       <canvas
         ref={canvasRef}
         width={384}

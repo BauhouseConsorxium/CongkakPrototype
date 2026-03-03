@@ -13,6 +13,7 @@ import SampleEditor from './components/SampleEditor';
 import KnobsBar from './components/KnobsBar';
 import PadsGrid from './components/PadsGrid';
 import Sidebar from './components/Sidebar';
+import GenerateBar from './components/GenerateBar';
 
 export default function App() {
   const { state, actions, stateRef } = useStore();
@@ -78,6 +79,12 @@ export default function App() {
             onTogglePlay={actions.togglePlay}
             onStop={actions.stop}
             onSetBpm={actions.setBpm}
+          />
+          <GenerateBar
+            state={state}
+            dispatch={actions.dispatch}
+            setBpm={actions.setBpm}
+            log={actions.log}
           />
           <div className="flex gap-3 items-stretch justify-center flex-wrap">
             <div className="shrink-0" style={{ width: 128 * 3 + 12 }}>

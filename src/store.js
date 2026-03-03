@@ -8,6 +8,8 @@ import {
 } from './audio';
 import { euclidean as computeEuclidean } from './euclidean';
 import { saveSample, deleteSample, saveRegion, loadAllSamples } from './sample-db';
+import { extractFeatures } from './audio-features';
+import { classifySample } from './sample-classifier';
 
 const initialKnobValues = KNOB_DEFS.map(k => k.val);
 
@@ -191,6 +193,29 @@ function reducer(state, action) {
       }
       return { ...state, samples: newSamples };
     }
+    case 'SET_SAMPLE_FEATURES': {
+      const newSamples = [...state.samples];
+      if (newSamples[action.trackIndex]) {
+        newSamples[action.trackIndex] = { ...newSamples[action.trackIndex], features: action.features };
+      }
+      return { ...state, samples: newSamples };
+    }
+    case 'SET_SAMPLE_LABEL': {
+      const newSamples = [...state.samples];
+      if (newSamples[action.trackIndex]) {
+        newSamples[action.trackIndex] = { ...newSamples[action.trackIndex], label: action.label };
+      }
+      return { ...state, samples: newSamples };
+    }
+    case 'APPLY_SCENE_PARAMS': {
+      const newKV = [...state.knobValues];
+      newKV[4] = action.pitch;
+      newKV[5] = action.decay;
+      newKV[6] = action.filter;
+      newKV[7] = action.glitch;
+      newKV[8] = action.vol;
+      return { ...state, knobValues: newKV };
+    }
     default:
       return state;
   }
@@ -214,6 +239,17 @@ function downsampleWaveform(audioBuffer, points = 256) {
     peaks[i] = max;
   }
   return peaks;
+}
+
+function analyzeSample(audioBuffer, trackIndex, dispatch) {
+  try {
+    const features = extractFeatures(audioBuffer);
+    dispatch({ type: 'SET_SAMPLE_FEATURES', trackIndex, features });
+    const label = classifySample(features);
+    dispatch({ type: 'SET_SAMPLE_LABEL', trackIndex, label });
+  } catch {
+    // Feature extraction is best-effort — don't break sample loading
+  }
 }
 
 export function useStore() {
@@ -265,6 +301,7 @@ export function useStore() {
         const waveform = downsampleWaveform(audioBuffer, 256);
         dispatch({ type: 'SET_SAMPLE', trackIndex, duration: audioBuffer.duration, waveform });
         dispatch({ type: 'SET_SAMPLE_REGION', trackIndex, start: region.start, end: region.end });
+        analyzeSample(audioBuffer, trackIndex, dispatch);
       }
       if (entries.length) dispatch({ type: 'LOG', msg: entries.length + ' sample(s) restored' });
     }).catch(() => {});
@@ -367,6 +404,7 @@ export function useStore() {
       const waveform = downsampleWaveform(audioBuf, 256);
       dispatch({ type: 'SET_SAMPLE', trackIndex: trackIdx, duration: audioBuf.duration, waveform });
       dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' sample: ' + audioBuf.duration.toFixed(1) + 's' });
+      analyzeSample(audioBuf, trackIdx, dispatch);
       saveSample(trackIdx, audioBuf, { start: 0, end: 1 }).catch(() => {});
     } catch (e) {
       dispatch({ type: 'SET_RECORDING', recording: false });
@@ -410,6 +448,7 @@ export function useStore() {
       const waveform = downsampleWaveform(buf, 256);
       dispatch({ type: 'SET_SAMPLE', trackIndex: trackIdx, duration: buf.duration, waveform });
       dispatch({ type: 'LOG', msg: TRACKS[trackIdx].s + ' loaded: ' + file.name });
+      analyzeSample(buf, trackIdx, dispatch);
       saveSample(trackIdx, buf, { start: 0, end: 1 }).catch(() => {});
     } catch (e) {
       dispatch({ type: 'LOG', msg: 'Load error: ' + e.message });
