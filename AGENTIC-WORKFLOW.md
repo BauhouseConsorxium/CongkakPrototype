@@ -32,25 +32,50 @@ Proactively suggest spawning agents when:
 
 ## How to Spawn
 
-### Get the current session ID
+### Option A: Simple spawn (recommended)
+
+No `--resume` needed. The agent picks up CLAUDE.md automatically, which provides full project context. Pass a detailed task prompt with all the info the agent needs.
 
 ```bash
-ls -t ~/.claude/projects/$(pwd | tr '/' '-')//*.jsonl | head -1
-# Extract UUID from filename
+cmux new-workspace --command "cd <project-root> && claude -w <worktree-name> '<detailed task prompt>'"
+cmux rename-workspace "agent: <short-label>"
+cmux set-status <agent-name> "running" --color "#FFaa00"
 ```
 
-### Spawn a visible agent with full context
-
-```bash
-cmux new-workspace --command "cd <project-root> && claude --resume <session-id> --fork-session -w <worktree-name> --print '<task prompt>'"
-cmux rename-workspace "<short-label>"
-```
-
-**Flags explained:**
-- `--resume <id> --fork-session` — forks the current conversation so the agent knows all prior context (files read, decisions made, architecture discussed)
+**Flags:**
 - `-w <name>` — creates an isolated git worktree automatically
-- `--print` — non-interactive, runs to completion and exits
-- Remove `--print` if the user wants to interact with the agent
+- The task prompt should be self-contained: list files to create/modify, expected behavior, constraints
+- Agent runs interactively — user can watch and type corrections
+
+### Option B: Fork with conversation context
+
+Use `--resume --fork-session` to give the agent the full conversation history. **Important:** this only works when launched from the **same project directory** (not from inside a worktree), because `--resume` looks up sessions by project path.
+
+```bash
+# Step 1: Get the current session ID
+ls -t ~/.claude/projects/$(pwd | tr '/' '-')/*.jsonl | head -1
+# Extract UUID from filename
+
+# Step 2: Spawn — do NOT combine --resume with -w (worktree changes the project path, breaking session lookup)
+# Instead, create worktree manually first:
+git worktree add .claude/worktrees/<name>
+cmux new-workspace --command "cd <project-root>/.claude/worktrees/<name> && claude --resume <session-id> --fork-session '<task prompt>'"
+cmux rename-workspace "agent: <short-label>"
+```
+
+### Known gotcha: `--resume` + `-w` don't work together
+
+`-w` creates a worktree first, then `--resume` looks for sessions under the **worktree's path** (not the original project). The session won't be found. Workaround:
+- Use Option A (no `--resume`) for most cases — CLAUDE.md provides enough context
+- Use Option B (manual worktree + `--resume` without `-w`) when conversation history is essential
+
+### Add `--print` for non-interactive mode
+
+Add `--print` to run to completion and exit without user interaction:
+
+```bash
+cmux new-workspace --command "cd <project-root> && claude -w <name> --print '<task prompt>'"
+```
 
 ### Monitor agents
 
@@ -70,11 +95,11 @@ cmux set-progress <0.0-1.0> --label "<n>/<total> agents complete"
 ### Pull results
 
 ```bash
-# Structured output
-claude --resume <id> --fork-session --print --output-format json '<prompt>' | jq '.result'
-
 # Read agent's screen output
 cmux capture-pane --workspace workspace:<n> --scrollback
+
+# Structured output (non-interactive)
+claude --print --output-format json '<prompt>' | jq '.result'
 ```
 
 ## Worktree Management
@@ -150,22 +175,25 @@ cmux browser eval "document.querySelectorAll('.knob').length"  # assert
 User: "Add track mute/solo, tap tempo, and randomize patterns"
 
 Claude response:
-> These are 3 independent features. I'll spawn parallel agents in cmux:
-> 1. **mute-solo** — Track mute/solo buttons on TrackBar
-> 2. **tap-tempo** — Tap tempo button in Transport
-> 3. **randomize** — Randomize button with musical constraints
->
-> Each gets its own worktree and full conversation context. You'll see them in separate cmux tabs.
+> These are 3 independent features. I'll spawn parallel agents in cmux, each in its own worktree. You'll see them working in separate tabs. Want me to launch them?
 
 ```bash
-cmux new-workspace --command "cd $(pwd) && claude --resume SESSION --fork-session -w mute-solo --print 'implement track mute/solo...'"
+cmux new-workspace --command "cd $(pwd) && claude -w mute-solo 'Implement track mute/solo for this drum machine. Add mute[] and solo state to store.js. Tap track label in TrackBar.jsx to mute (dim + strikethrough), double-tap to solo. Muted tracks skip playSound in the tick handler. Run npm run build to verify. Do NOT commit.'"
 cmux rename-workspace "agent: mute-solo"
+cmux set-status mute-solo "running" --color "#FFaa00"
 
-cmux new-workspace --command "cd $(pwd) && claude --resume SESSION --fork-session -w tap-tempo --print 'implement tap tempo...'"
+cmux new-workspace --command "cd $(pwd) && claude -w tap-tempo 'Implement tap tempo for this drum machine. Add a TAP button in Transport.jsx. Track last 4 tap timestamps, compute average interval, derive BPM and call setBpm. Debounce resets after 2s of no taps. Run npm run build to verify. Do NOT commit.'"
 cmux rename-workspace "agent: tap-tempo"
+cmux set-status tap-tempo "running" --color "#FFaa00"
 
-cmux new-workspace --command "cd $(pwd) && claude --resume SESSION --fork-session -w randomize --print 'implement randomize...'"
+cmux new-workspace --command "cd $(pwd) && claude -w randomize 'Implement randomize pattern button for this drum machine. Add RANDOM button near the transport. When clicked, generate a musically-aware random pattern for the selected track — weight toward common rhythmic positions (beats 1,5,9,13 for kick, offbeats for hihat, etc). Use the track type from constants.js to pick appropriate density. Dispatch SET_PATTERN. Run npm run build to verify. Do NOT commit.'"
 cmux rename-workspace "agent: randomize"
+cmux set-status randomize "running" --color "#FFaa00"
 
 cmux set-progress 0.0 --label "0/3 agents complete"
 ```
+
+**Key points in prompts:**
+- Self-contained: list exact files, expected behavior, constraints
+- End with "Run npm run build to verify. Do NOT commit."
+- No `--resume` needed — CLAUDE.md provides project context automatically
